@@ -183,7 +183,7 @@ internal fun MediaPlayerCard(
     onOpenApp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = MaterialTheme.colorScheme
+    val colors = rememberAlbumColorScheme(media.art)
     Box(
         modifier =
             modifier
