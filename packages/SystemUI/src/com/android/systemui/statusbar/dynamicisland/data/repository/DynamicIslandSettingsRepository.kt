@@ -26,6 +26,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandLayoutSettings
 import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandSettingsKeys
 import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandSettingsModel
 import javax.inject.Inject
@@ -72,7 +73,9 @@ constructor(
                         }
                     }
                 val resolver = context.contentResolver
-                (DynamicIslandSettingsKeys.BOOLEAN_KEYS + DynamicIslandSettingsKeys.BLOCKED_PACKAGES)
+                (DynamicIslandSettingsKeys.BOOLEAN_KEYS +
+                        DynamicIslandSettingsKeys.INT_KEYS +
+                        DynamicIslandSettingsKeys.BLOCKED_PACKAGES)
                     .forEach { key ->
                         resolver.registerContentObserver(
                             Settings.System.getUriFor(key),
@@ -96,7 +99,47 @@ constructor(
             liveMedia = flag(DynamicIslandSettingsKeys.LIVE_MEDIA),
             liveAlarms = flag(DynamicIslandSettingsKeys.LIVE_ALARMS),
             blockedPackages = blockedPackages(),
+            layout = layout(),
         )
+
+    private fun layout(): DynamicIslandLayoutSettings =
+        DynamicIslandLayoutSettings(
+            autoPosition = flag(DynamicIslandSettingsKeys.AUTO_POSITION),
+            positionXDp =
+                int(
+                    DynamicIslandSettingsKeys.POSITION_X,
+                    DynamicIslandLayoutSettings.DEFAULT_POSITION_X,
+                    DynamicIslandLayoutSettings.POSITION_X_RANGE,
+                ),
+            positionYDp =
+                int(
+                    DynamicIslandSettingsKeys.POSITION_Y,
+                    DynamicIslandLayoutSettings.DEFAULT_POSITION_Y,
+                    DynamicIslandLayoutSettings.POSITION_Y_RANGE,
+                ),
+            sizePercent =
+                int(
+                    DynamicIslandSettingsKeys.SIZE_PERCENT,
+                    DynamicIslandLayoutSettings.DEFAULT_SIZE_PERCENT,
+                    DynamicIslandLayoutSettings.SIZE_PERCENT_RANGE,
+                ),
+            cameraGapDp =
+                int(
+                    DynamicIslandSettingsKeys.CAMERA_GAP,
+                    DynamicIslandLayoutSettings.DEFAULT_CAMERA_GAP,
+                    DynamicIslandLayoutSettings.CAMERA_GAP_RANGE,
+                ),
+        )
+
+    /** An integer option, kept inside [range] so a bad value can never break the layout. */
+    private fun int(key: String, def: Int, range: IntRange): Int =
+        Settings.System.getIntForUser(
+                context.contentResolver,
+                key,
+                def,
+                UserHandle.USER_CURRENT,
+            )
+            .coerceIn(range)
 
     /** Every option is enabled unless Settings explicitly wrote 0. */
     private fun flag(key: String): Boolean =

@@ -95,12 +95,13 @@ private const val TAG = "DynamicIslandMedia"
 internal fun MediaIslandPill(
     media: DynamicIslandMediaModel,
     extraCount: Int,
+    gap: Dp,
     clickable: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    IslandSides(
+        gap = gap,
         modifier =
             modifier
                 .height(ISLAND_HEIGHT)
@@ -108,29 +109,33 @@ internal fun MediaIslandPill(
                 .background(Color.Black)
                 .thenIf(clickable) { Modifier.clickable(onClick = onClick) }
                 .padding(horizontal = 4.dp),
-    ) {
-        val art = media.art
-        if (art != null) {
-            Image(
-                bitmap = art.asImageBitmap(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(28.dp).clip(CircleShape),
-            )
-        } else {
-            Spacer(Modifier.size(28.dp).clip(CircleShape).background(Color.DarkGray))
-        }
-        Spacer(Modifier.width(CAMERA_GAP))
-        AudioWave(isPlaying = media.isPlaying, modifier = Modifier.padding(end = 10.dp))
-        if (extraCount > 0) {
-            Text(
-                text = "+$extraCount",
-                color = Color.White,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(end = 6.dp),
-            )
-        }
-    }
+        start = {
+            val art = media.art
+            if (art != null) {
+                Image(
+                    bitmap = art.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(28.dp).clip(CircleShape),
+                )
+            } else {
+                Spacer(Modifier.size(28.dp).clip(CircleShape).background(Color.DarkGray))
+            }
+        },
+        end = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AudioWave(isPlaying = media.isPlaying, modifier = Modifier.padding(end = 10.dp))
+                if (extraCount > 0) {
+                    Text(
+                        text = "+$extraCount",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(end = 6.dp),
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable

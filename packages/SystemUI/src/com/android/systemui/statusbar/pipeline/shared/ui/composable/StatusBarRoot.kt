@@ -418,6 +418,7 @@ fun StatusBarRoot(
                 expandOnTap = islandSettings.expandOnTap,
                 iconViewStore = iconViewStore,
                 modifier = Modifier.align(Alignment.TopCenter),
+                layoutSettings = islandSettings.layout,
             )
         }
     }

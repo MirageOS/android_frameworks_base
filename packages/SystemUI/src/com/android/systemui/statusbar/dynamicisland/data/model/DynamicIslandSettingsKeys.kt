@@ -32,6 +32,13 @@ object DynamicIslandSettingsKeys {
     const val LIVE_ALARMS = "dynamic_island_live_alarms"
     const val BLOCKED_PACKAGES = "dynamic_island_blocked_packages"
 
+    /** Position and size. With [AUTO_POSITION] on, the other four are ignored. */
+    const val AUTO_POSITION = "dynamic_island_auto_position"
+    const val POSITION_X = "dynamic_island_position_x"
+    const val POSITION_Y = "dynamic_island_position_y"
+    const val SIZE_PERCENT = "dynamic_island_size"
+    const val CAMERA_GAP = "dynamic_island_camera_gap"
+
     /** Every key that is a 0/1 flag. */
     val BOOLEAN_KEYS =
         listOf(
@@ -43,5 +50,9 @@ object DynamicIslandSettingsKeys {
             LIVE_CALLS,
             LIVE_MEDIA,
             LIVE_ALARMS,
+            AUTO_POSITION,
         )
+
+    /** Every key that is an integer (dp or percent, see [DynamicIslandLayoutSettings]). */
+    val INT_KEYS = listOf(POSITION_X, POSITION_Y, SIZE_PERCENT, CAMERA_GAP)
 }

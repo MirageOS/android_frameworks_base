@@ -30,6 +30,8 @@ data class DynamicIslandSettingsModel(
     val liveAlarms: Boolean = true,
     /** Packages whose live updates must not use the island. */
     val blockedPackages: Set<String> = emptySet(),
+    /** Where the island sits and how big it is. */
+    val layout: DynamicIslandLayoutSettings = DynamicIslandLayoutSettings(),
 ) {
     /** Whether live updates coming from [packageName] may use the island. */
     fun isPackageAllowed(packageName: String?): Boolean =
