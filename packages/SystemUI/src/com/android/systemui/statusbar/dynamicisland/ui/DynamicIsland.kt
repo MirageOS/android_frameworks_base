@@ -65,7 +65,7 @@ internal val ISLAND_HEIGHT = 36.dp
 internal val ISLAND_TOP_PADDING = 4.dp
 // Space left in the middle of the pill for the front camera.
 internal val CAMERA_GAP = 56.dp
-private val CARD_WIDTH = 340.dp
+private val CARD_WIDTH = 400.dp
 private const val AUTO_COLLAPSE_MS = 12_000L
 
 /**
