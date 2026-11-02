@@ -50,26 +50,29 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.compose.ChipContent
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChip
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandMediaModel
 import com.android.systemui.statusbar.dynamicisland.ui.model.DynamicIslandItem
 import com.android.systemui.statusbar.dynamicisland.ui.model.DynamicIslandKind
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import kotlinx.coroutines.delay
 
-private val ISLAND_HEIGHT = 36.dp
+internal val ISLAND_HEIGHT = 36.dp
 private val ISLAND_TOP_PADDING = 4.dp
 // Space left in the middle of the pill for the front camera.
-private val CAMERA_GAP = 56.dp
+internal val CAMERA_GAP = 56.dp
 private val CARD_WIDTH = 340.dp
-private const val AUTO_COLLAPSE_MS = 8_000L
+private const val AUTO_COLLAPSE_MS = 12_000L
 
 /**
  * Motorola-style Dynamic Island: a black pill centered on the camera showing the highest priority
- * live update (icon on one side, timer or text on the other). Tapping it expands a card with every
- * live update, when [expandOnTap] is on.
+ * live update (icon on one side, timer or text on the other); when there are none it shows the
+ * playing [media] (album art and an audio wave). Tapping it expands a card with every live update
+ * and the media player, when [expandOnTap] is on.
  */
 @Composable
 fun DynamicIsland(
     items: List<DynamicIslandItem>,
+    media: DynamicIslandMediaModel?,
     expandOnTap: Boolean,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
@@ -77,7 +80,8 @@ fun DynamicIsland(
     var expanded by remember { mutableStateOf(false) }
 
     // Collapse when there is nothing left to show or the option was turned off.
-    val canExpand = expandOnTap && items.isNotEmpty()
+    val hasContent = items.isNotEmpty() || media != null
+    val canExpand = expandOnTap && hasContent
     LaunchedEffect(canExpand) {
         if (!canExpand) expanded = false
     }
@@ -88,24 +92,34 @@ fun DynamicIsland(
         }
     }
 
-    if (items.isEmpty()) return
+    if (!hasContent) return
 
     Box(modifier = modifier) {
-        IslandPill(
-            item = items.first(),
-            extraCount = items.size - 1,
-            clickable = expandOnTap,
-            onClick = { expanded = !expanded },
-            iconViewStore = iconViewStore,
-            modifier = Modifier.padding(top = ISLAND_TOP_PADDING),
-        )
+        if (items.isNotEmpty()) {
+            IslandPill(
+                item = items.first(),
+                extraCount = items.size - 1 + (if (media != null) 1 else 0),
+                clickable = expandOnTap,
+                onClick = { expanded = !expanded },
+                iconViewStore = iconViewStore,
+                modifier = Modifier.padding(top = ISLAND_TOP_PADDING),
+            )
+        } else if (media != null) {
+            MediaIslandPill(
+                media = media,
+                extraCount = 0,
+                clickable = expandOnTap,
+                onClick = { expanded = !expanded },
+                modifier = Modifier.padding(top = ISLAND_TOP_PADDING),
+            )
+        }
         if (expanded && canExpand) {
             Popup(
                 alignment = Alignment.TopCenter,
                 onDismissRequest = { expanded = false },
                 properties = PopupProperties(focusable = false, dismissOnClickOutside = true),
             ) {
-                IslandCard(items = items, iconViewStore = iconViewStore)
+                IslandCard(items = items, media = media, iconViewStore = iconViewStore)
             }
         }
     }
@@ -173,32 +187,42 @@ private fun IslandPill(
 @Composable
 private fun IslandCard(
     items: List<DynamicIslandItem>,
+    media: DynamicIslandMediaModel?,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier =
-            Modifier.padding(top = ISLAND_TOP_PADDING)
-                .width(CARD_WIDTH)
-                .clip(RoundedCornerShape(32.dp))
-                .background(Color.Black)
-                .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(top = ISLAND_TOP_PADDING).width(CARD_WIDTH),
     ) {
-        items.forEach { item ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
+        if (items.isNotEmpty()) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(Color.Black)
+                        .padding(16.dp),
             ) {
-                Text(
-                    text = stringResource(labelFor(item.kind)),
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                // The regular chip: shows the timer and keeps its own click action (open the app,
-                // stop the recording, ...).
-                OngoingActivityChip(model = item.chip, iconViewStore = iconViewStore)
+                items.forEach { item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(labelFor(item.kind)),
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        // The regular chip: shows the timer and keeps its own click action (open
+                        // the app, stop the recording, ...).
+                        OngoingActivityChip(model = item.chip, iconViewStore = iconViewStore)
+                    }
+                }
             }
+        }
+        if (media != null) {
+            MediaPlayerCard(media = media, onOpenApp = { openMediaApp(media) })
         }
     }
 }

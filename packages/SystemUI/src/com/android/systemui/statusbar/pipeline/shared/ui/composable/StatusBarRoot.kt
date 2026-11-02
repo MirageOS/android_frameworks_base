@@ -97,7 +97,9 @@ import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
+import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandMediaModel
 import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandSettingsModel
+import com.android.systemui.statusbar.dynamicisland.data.repository.DynamicIslandMediaRepository
 import com.android.systemui.statusbar.dynamicisland.data.repository.DynamicIslandSettingsRepository
 import com.android.systemui.statusbar.dynamicisland.ui.DynamicIsland
 import com.android.systemui.statusbar.dynamicisland.ui.DynamicIslandItems
@@ -156,6 +158,7 @@ constructor(
     private val statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
     private val shadeWindowRootView: WindowRootView,
     private val dynamicIslandSettingsRepository: DynamicIslandSettingsRepository,
+    private val dynamicIslandMediaRepository: DynamicIslandMediaRepository,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
@@ -182,6 +185,7 @@ constructor(
                         onViewCreated = andThen,
                         modifier = Modifier.sysUiResTagContainer(),
                         dynamicIslandSettings = dynamicIslandSettingsRepository.settings,
+                        dynamicIslandMedia = dynamicIslandMediaRepository.media,
                     )
                 }
             }
@@ -221,6 +225,7 @@ fun StatusBarRoot(
     onViewCreated: (ViewGroup) -> Unit,
     modifier: Modifier = Modifier,
     dynamicIslandSettings: StateFlow<DynamicIslandSettingsModel>? = null,
+    dynamicIslandMedia: StateFlow<DynamicIslandMediaModel?>? = null,
 ) {
     val displayId = parent.context.displayId
     val statusBarViewModel =
@@ -406,8 +411,10 @@ fun StatusBarRoot(
                 } else {
                     emptyList()
                 }
+            val islandMedia = dynamicIslandMedia?.collectAsState()?.value
             DynamicIsland(
                 items = islandItems,
+                media = if (chipsVisibility.areChipsAllowed) islandMedia else null,
                 expandOnTap = islandSettings.expandOnTap,
                 iconViewStore = iconViewStore,
                 modifier = Modifier.align(Alignment.TopCenter),

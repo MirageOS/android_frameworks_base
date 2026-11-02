@@ -6,4 +6,10 @@
     <string name="dynamic_island_label_alarm">Alarm or timer</string>
     <string name="dynamic_island_label_recorder">Recorder</string>
     <string name="dynamic_island_label_app">Live update</string>
+    <!-- Dynamic Island: media player -->
+    <string name="dynamic_island_this_phone">This phone</string>
+    <string name="dynamic_island_media_previous">Previous</string>
+    <string name="dynamic_island_media_next">Next</string>
+    <string name="dynamic_island_media_play">Play</string>
+    <string name="dynamic_island_media_pause">Pause</string>
 </resources>

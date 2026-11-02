@@ -6,4 +6,10 @@
     <string name="dynamic_island_label_alarm">Alarme ou timer</string>
     <string name="dynamic_island_label_recorder">Gravador</string>
     <string name="dynamic_island_label_app">Atualização em tempo real</string>
+    <!-- Dynamic Island: media player -->
+    <string name="dynamic_island_this_phone">Este telefone</string>
+    <string name="dynamic_island_media_previous">Anterior</string>
+    <string name="dynamic_island_media_next">Próxima</string>
+    <string name="dynamic_island_media_play">Reproduzir</string>
+    <string name="dynamic_island_media_pause">Pausar</string>
 </resources>
