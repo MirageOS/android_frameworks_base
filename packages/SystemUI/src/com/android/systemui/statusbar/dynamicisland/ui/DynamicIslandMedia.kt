@@ -178,12 +178,12 @@ private fun AudioWave(isPlaying: Boolean, modifier: Modifier = Modifier) {
  * previous / wavy seek bar / next / app buttons at the bottom.
  */
 @Composable
-internal fun MediaPlayerCard(
+internal fun MediaPlayerCardContent(
     media: DynamicIslandMediaModel,
     onOpenApp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = rememberAlbumColorScheme(media.art)
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier =
             modifier
@@ -365,7 +365,7 @@ private fun TransportButton(
     ) {
         TransportIcon(
             kind = kind,
-            tint = Color.White.copy(alpha = if (enabled) 1f else 0.4f),
+            tint = LocalAlbumAccent.current.copy(alpha = if (enabled) 1f else 0.4f),
             size = 24.dp,
         )
     }
@@ -399,7 +399,7 @@ private fun CustomActionButton(
             Image(
                 bitmap = icon,
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(Color.White),
+                colorFilter = ColorFilter.tint(LocalAlbumAccent.current),
                 modifier = Modifier.size(24.dp),
             )
         }
@@ -409,6 +409,7 @@ private fun CustomActionButton(
 /** Seek bar whose played part is a moving wave while the media plays, like the quick settings. */
 @Composable
 private fun WavySeekBar(media: DynamicIslandMediaModel, modifier: Modifier = Modifier) {
+    val accent = LocalAlbumAccent.current
     val density = LocalDensity.current
     val position by
         produceState(initialValue = media.currentPositionMs(), media) {
@@ -471,7 +472,7 @@ private fun WavySeekBar(media: DynamicIslandMediaModel, modifier: Modifier = Mod
 
         // Part that was not played yet.
         drawLine(
-            color = Color.White.copy(alpha = 0.3f),
+            color = accent.copy(alpha = 0.3f),
             start = Offset(x, centerY),
             end = Offset(this.size.width, centerY),
             strokeWidth = stroke,
@@ -491,13 +492,13 @@ private fun WavySeekBar(media: DynamicIslandMediaModel, modifier: Modifier = Mod
         }
         drawPath(
             path = path,
-            color = Color.White,
+            color = accent,
             style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round),
         )
 
         // Thumb
         drawRoundRect(
-            color = Color.White,
+            color = accent,
             topLeft = Offset(x - 2.dp.toPx(), centerY - 10.dp.toPx()),
             size = Size(4.dp.toPx(), 20.dp.toPx()),
             cornerRadius = CornerRadius(2.dp.toPx()),

@@ -115,3 +115,21 @@ internal fun rememberAlbumColorScheme(art: Bitmap?): ColorScheme {
         onSecondaryContainer = onContainer,
     )
 }
+
+/** Accent used by the player icons and seek bar: the album accent while the player is shown. */
+internal val LocalAlbumAccent = androidx.compose.runtime.compositionLocalOf { Color.White }
+
+/** The expanded player, tinted by the album art. */
+@Composable
+internal fun MediaPlayerCard(
+    media: com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandMediaModel,
+    onOpenApp: () -> Unit,
+    modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier,
+) {
+    val scheme = rememberAlbumColorScheme(media.art)
+    androidx.compose.runtime.CompositionLocalProvider(LocalAlbumAccent provides scheme.primary) {
+        MaterialTheme(colorScheme = scheme) {
+            MediaPlayerCardContent(media = media, onOpenApp = onOpenApp, modifier = modifier)
+        }
+    }
+}
