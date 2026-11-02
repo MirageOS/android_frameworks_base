@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Dynamic Island: label of each live update in the expanded card -->
+    <string name="dynamic_island_label_call">Call in progress</string>
+    <string name="dynamic_island_label_screen_record">Screen recording</string>
+    <string name="dynamic_island_label_alarm">Alarm or timer</string>
+    <string name="dynamic_island_label_recorder">Recorder</string>
+    <string name="dynamic_island_label_app">Live update</string>
+</resources>

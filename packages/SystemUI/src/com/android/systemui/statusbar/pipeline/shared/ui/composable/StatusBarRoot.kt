@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -96,6 +97,10 @@ import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
+import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandSettingsModel
+import com.android.systemui.statusbar.dynamicisland.data.repository.DynamicIslandSettingsRepository
+import com.android.systemui.statusbar.dynamicisland.ui.DynamicIsland
+import com.android.systemui.statusbar.dynamicisland.ui.DynamicIslandItems
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
@@ -129,6 +134,7 @@ import javax.inject.Inject
 import kotlin.math.abs
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.StateFlow
 
 /** Factory to simplify the dependency management for [StatusBarRoot] */
 @PerDisplaySingleton
@@ -149,6 +155,7 @@ constructor(
     @DisplayAware private val headlineViewModelFactory: HeadlineViewModel.Factory,
     private val statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
     private val shadeWindowRootView: WindowRootView,
+    private val dynamicIslandSettingsRepository: DynamicIslandSettingsRepository,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
@@ -174,6 +181,7 @@ constructor(
                             statusBarRegionSamplingViewModelFactory,
                         onViewCreated = andThen,
                         modifier = Modifier.sysUiResTagContainer(),
+                        dynamicIslandSettings = dynamicIslandSettingsRepository.settings,
                     )
                 }
             }
@@ -212,6 +220,7 @@ fun StatusBarRoot(
     statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
     onViewCreated: (ViewGroup) -> Unit,
     modifier: Modifier = Modifier,
+    dynamicIslandSettings: StateFlow<DynamicIslandSettingsModel>? = null,
 ) {
     val displayId = parent.context.displayId
     val statusBarViewModel =
@@ -269,6 +278,7 @@ fun StatusBarRoot(
                     iconViewStore = iconViewStore,
                     appHandlesViewModel = appHandlesViewModel,
                     context = context,
+                    dynamicIslandSettings = dynamicIslandSettings,
                 )
 
                 touchableExclusionRegionDisposableHandle =
@@ -386,6 +396,23 @@ fun StatusBarRoot(
             parent.initOnBackPressedDispatcherOwner(lifecycle, force = true)
             headlineComposer.Content(headlineViewModel, modifier = Modifier.align(Alignment.Center))
         }
+
+        if (dynamicIslandSettings != null) {
+            val islandSettings by dynamicIslandSettings.collectAsState()
+            val chipsVisibility = statusBarViewModel.ongoingActivityChips
+            val islandItems =
+                if (chipsVisibility.areChipsAllowed) {
+                    DynamicIslandItems.items(chipsVisibility.chips.active, islandSettings)
+                } else {
+                    emptyList()
+                }
+            DynamicIsland(
+                items = islandItems,
+                expandOnTap = islandSettings.expandOnTap,
+                iconViewStore = iconViewStore,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     }
 }
 
@@ -397,6 +424,7 @@ private fun addStartSideComposable(
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     appHandlesViewModel: AppHandlesViewModel,
     context: Context,
+    dynamicIslandSettings: StateFlow<DynamicIslandSettingsModel>? = null,
 ) {
     val startSideExceptHeadsUp =
         phoneStatusBarView.requireViewById<LinearLayout>(R.id.status_bar_start_side_except_heads_up)
@@ -510,9 +538,23 @@ private fun addStartSideComposable(
                     }
 
                 val chipsVisibilityModel = statusBarViewModel.ongoingActivityChips
+                // The Dynamic Island takes over the chips it handles, so don't also show them
+                // on the start side of the status bar.
+                val islandSettings = dynamicIslandSettings?.collectAsState()?.value
+                val startSideChips =
+                    if (islandSettings == null) {
+                        chipsVisibilityModel.chips
+                    } else {
+                        chipsVisibilityModel.chips.copy(
+                            active =
+                                chipsVisibilityModel.chips.active.filterNot {
+                                    DynamicIslandItems.isHandled(it, islandSettings)
+                                }
+                        )
+                    }
                 if (chipsVisibilityModel.areChipsAllowed) {
                     OngoingActivityChips(
-                        chips = chipsVisibilityModel.chips,
+                        chips = startSideChips,
                         iconViewStore = iconViewStore,
                         onChipBoundsChanged = statusBarViewModel::onChipBoundsChanged,
                         // TODO(b/393581408): Now that we always enforce a max width on the chips,
