@@ -62,6 +62,8 @@ constructor(
                         trySend(enabled)
                     }
 
+                    override fun onFlashlightStrengthChanged(level: Int) {}
+
                     override fun onFlashlightError() {
                         trySend(false)
                     }
