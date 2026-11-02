@@ -30,6 +30,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -131,18 +140,39 @@ fun DynamicIsland(
                 )
             }
         }
-        if (expanded && canExpand) {
+        // The popup stays alive until the exit animation is over.
+        val cardState = remember { MutableTransitionState(false) }
+        cardState.targetState = expanded && canExpand
+        if (cardState.currentState || cardState.targetState) {
             Popup(
                 alignment = Alignment.TopCenter,
                 onDismissRequest = { expanded = false },
                 properties = PopupProperties(focusable = false, dismissOnClickOutside = true),
             ) {
-                IslandCard(
-                    items = items,
-                    media = media,
-                    topPadding = islandLayout.topPadding,
-                    iconViewStore = iconViewStore,
-                )
+                AnimatedVisibility(
+                    visibleState = cardState,
+                    enter =
+                        fadeIn(tween(160)) +
+                            scaleIn(
+                                animationSpec = spring(dampingRatio = 0.7f, stiffness = 420f),
+                                initialScale = 0.55f,
+                                transformOrigin = TransformOrigin(0.5f, 0f),
+                            ),
+                    exit =
+                        fadeOut(tween(120)) +
+                            scaleOut(
+                                animationSpec = tween(180),
+                                targetScale = 0.55f,
+                                transformOrigin = TransformOrigin(0.5f, 0f),
+                            ),
+                ) {
+                    IslandCard(
+                        items = items,
+                        media = media,
+                        topPadding = islandLayout.topPadding,
+                        iconViewStore = iconViewStore,
+                    )
+                }
             }
         }
     }
