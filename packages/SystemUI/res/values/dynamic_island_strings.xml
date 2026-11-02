@@ -12,4 +12,5 @@
     <string name="dynamic_island_media_next">Next</string>
     <string name="dynamic_island_media_play">Play</string>
     <string name="dynamic_island_media_pause">Pause</string>
+    <string name="dynamic_island_flashlight">Flashlight</string>
 </resources>

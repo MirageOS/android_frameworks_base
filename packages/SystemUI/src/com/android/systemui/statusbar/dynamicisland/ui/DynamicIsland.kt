@@ -94,13 +94,15 @@ fun DynamicIsland(
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
     layoutSettings: DynamicIslandLayoutSettings = DynamicIslandLayoutSettings(),
+    flashlightOn: Boolean = false,
+    onFlashlightOff: (() -> Unit)? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val islandLayout = rememberDynamicIslandLayout(layoutSettings)
     val density = LocalDensity.current
 
     // Collapse when there is nothing left to show or the option was turned off.
-    val hasContent = items.isNotEmpty() || media != null
+    val hasContent = items.isNotEmpty() || media != null || flashlightOn
     val canExpand = expandOnTap && hasContent
     LaunchedEffect(canExpand) {
         if (!canExpand) expanded = false
@@ -127,6 +129,13 @@ fun DynamicIsland(
                     clickable = expandOnTap,
                     onClick = { expanded = !expanded },
                     iconViewStore = iconViewStore,
+                    modifier = Modifier.padding(top = islandLayout.topPadding / islandLayout.scale),
+                )
+            } else if (flashlightOn) {
+                FlashlightIslandPill(
+                    gap = gap,
+                    clickable = onFlashlightOff != null,
+                    onClick = { onFlashlightOff?.invoke() },
                     modifier = Modifier.padding(top = islandLayout.topPadding / islandLayout.scale),
                 )
             } else if (media != null) {

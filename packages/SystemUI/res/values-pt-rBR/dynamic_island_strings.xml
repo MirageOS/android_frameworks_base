@@ -12,4 +12,5 @@
     <string name="dynamic_island_media_next">Próxima</string>
     <string name="dynamic_island_media_play">Reproduzir</string>
     <string name="dynamic_island_media_pause">Pausar</string>
+    <string name="dynamic_island_flashlight">Lanterna</string>
 </resources>

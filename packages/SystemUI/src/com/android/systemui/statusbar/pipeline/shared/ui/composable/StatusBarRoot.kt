@@ -99,6 +99,7 @@ import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandMediaModel
 import com.android.systemui.statusbar.dynamicisland.data.model.DynamicIslandSettingsModel
+import com.android.systemui.statusbar.dynamicisland.data.repository.DynamicIslandFlashlightRepository
 import com.android.systemui.statusbar.dynamicisland.data.repository.DynamicIslandMediaRepository
 import com.android.systemui.statusbar.dynamicisland.data.repository.DynamicIslandSettingsRepository
 import com.android.systemui.statusbar.dynamicisland.ui.DynamicIsland
@@ -159,6 +160,7 @@ constructor(
     private val shadeWindowRootView: WindowRootView,
     private val dynamicIslandSettingsRepository: DynamicIslandSettingsRepository,
     private val dynamicIslandMediaRepository: DynamicIslandMediaRepository,
+    private val dynamicIslandFlashlightRepository: DynamicIslandFlashlightRepository,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
@@ -186,6 +188,8 @@ constructor(
                         modifier = Modifier.sysUiResTagContainer(),
                         dynamicIslandSettings = dynamicIslandSettingsRepository.settings,
                         dynamicIslandMedia = dynamicIslandMediaRepository.media,
+                        dynamicIslandFlashlight = dynamicIslandFlashlightRepository.isOn,
+                        onDynamicIslandFlashlightOff = dynamicIslandFlashlightRepository::turnOff,
                     )
                 }
             }
@@ -226,6 +230,8 @@ fun StatusBarRoot(
     modifier: Modifier = Modifier,
     dynamicIslandSettings: StateFlow<DynamicIslandSettingsModel>? = null,
     dynamicIslandMedia: StateFlow<DynamicIslandMediaModel?>? = null,
+    dynamicIslandFlashlight: StateFlow<Boolean>? = null,
+    onDynamicIslandFlashlightOff: (() -> Unit)? = null,
 ) {
     val displayId = parent.context.displayId
     val statusBarViewModel =
@@ -412,9 +418,12 @@ fun StatusBarRoot(
                     emptyList()
                 }
             val islandMedia = dynamicIslandMedia?.collectAsState()?.value
+            val islandFlashlight = dynamicIslandFlashlight?.collectAsState()?.value ?: false
             DynamicIsland(
                 items = islandItems,
                 media = if (chipsVisibility.areChipsAllowed) islandMedia else null,
+                flashlightOn = chipsVisibility.areChipsAllowed && islandFlashlight,
+                onFlashlightOff = onDynamicIslandFlashlightOff,
                 expandOnTap = islandSettings.expandOnTap,
                 iconViewStore = iconViewStore,
                 modifier = Modifier.align(Alignment.TopCenter),
