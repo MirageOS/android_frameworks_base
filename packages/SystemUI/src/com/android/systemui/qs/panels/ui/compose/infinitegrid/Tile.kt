@@ -423,7 +423,7 @@ fun TileContainer(
             modifier
                 .height(
                     TileHeight +
-                        if (LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
+                        if (iconOnly && LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
                             24.qsDp
                         } else {
                             0.qsDp

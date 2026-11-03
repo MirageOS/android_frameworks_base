@@ -32,9 +32,13 @@ fun ContentScope.TileGrid(
     modifier: Modifier = Modifier,
     listening: () -> Boolean = { true },
     enableRevealEffect: Boolean = false,
+    excludedSpecs: Set<String> = emptySet(),
 ) {
     val gridLayout = viewModel.gridLayout
-    val tiles = viewModel.tileViewModels
+    val tiles =
+        viewModel.tileViewModels.let { all ->
+            if (excludedSpecs.isEmpty()) all else all.filterNot { it.spec.spec in excludedSpecs }
+        }
     with(gridLayout) {
         TileGrid(
             tiles = tiles,

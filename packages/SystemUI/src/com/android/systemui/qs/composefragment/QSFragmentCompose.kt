@@ -145,6 +145,7 @@ import com.android.systemui.qs.panels.shared.model.QSFragmentComposeClippingTabl
 import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.panels.ui.compose.TileGrid
+import com.android.systemui.qs.panels.ui.compose.MotorolaGridLayout
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExclusionInShade
@@ -833,6 +834,8 @@ constructor(
                         Spacer(
                             modifier = Modifier.height { qqsPadding + qsExtraPadding.roundToPx() }
                         )
+                        val motorolaLayout =
+                            containerViewModel.tileGridViewModel.gridLayout as? MotorolaGridLayout
                         val BrightnessSlider =
                             @Composable {
                                 Box(
@@ -887,6 +890,9 @@ constructor(
 
                                     TileGrid(
                                         viewModel = containerViewModel.tileGridViewModel,
+                                        excludedSpecs =
+                                            if (motorolaLayout != null) MotorolaGridLayout.HeaderSpecs
+                                            else emptySet(),
                                         modifier = Modifier.fillMaxWidth(),
                                         listening = isListening,
                                     )
@@ -919,7 +925,23 @@ constructor(
                         ) {
                             QuickSettingsLayout(
                                 brightness =
-                                    if (viewModel.isBrightnessSliderVisible) {
+                                    if (motorolaLayout != null) {
+                                        {
+                                            with(motorolaLayout) {
+                                                HeaderBlock(
+                                                    tiles =
+                                                        containerViewModel.tileGridViewModel
+                                                            .tileViewModels,
+                                                    listening = isListening,
+                                                    brightnessViewModel =
+                                                        containerViewModel.brightnessSliderViewModel
+                                                            .takeIf {
+                                                                viewModel.isBrightnessSliderVisible
+                                                            },
+                                                )
+                                            }
+                                        }
+                                    } else if (viewModel.isBrightnessSliderVisible) {
                                         { BrightnessSlider() }
                                     } else {
                                         {}
