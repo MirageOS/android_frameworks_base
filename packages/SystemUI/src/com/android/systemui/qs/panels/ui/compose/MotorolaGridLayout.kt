@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,7 @@ import com.android.systemui.brightness.ui.viewmodel.Drag
 import com.android.systemui.brightness.domain.model.GammaBrightness
 import com.android.systemui.common.ui.compose.Icon as SysUiIcon
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
+import com.android.systemui.qs.panels.data.repository.QsStyleRepository
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.Tile
@@ -74,6 +76,7 @@ constructor(
     private val detailsViewModel: DetailsViewModel,
     private val tileHapticsViewModelFactory: TileHapticsViewModel.Factory,
     private val audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
+    private val qsStyleRepository: QsStyleRepository,
 ) : GridLayout by paginated {
 
     @Composable
@@ -93,6 +96,11 @@ constructor(
         val count = blockTiles.size.coerceAtLeast(1)
         val blockHeight = CommonTileDefaults.TileHeight * count + spacing * (count - 1)
 
+        val qsStyleSettings by qsStyleRepository.settings.collectAsStateWithLifecycle()
+        CompositionLocalProvider(
+            LocalQsStyle provides
+                QsStyleUi(qsStyleSettings.motorolaStyle, qsStyleSettings.showLabels)
+        ) {
         Row(
             modifier = modifier.fillMaxWidth().height(blockHeight),
             horizontalArrangement = spacedBy(spacing),
@@ -127,6 +135,7 @@ constructor(
             }
         }
         TileListener(blockTiles, listening)
+        }
     }
 
     @Composable
