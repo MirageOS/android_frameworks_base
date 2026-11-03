@@ -54,6 +54,10 @@ import com.android.systemui.qs.panels.ui.viewmodel.PaginatedGridViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.EditModeButtonViewModel
 import com.android.systemui.res.R
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.systemui.qs.panels.data.repository.QsStyleRepository
 import javax.inject.Inject
 
 class PaginatedGridLayout
@@ -61,6 +65,7 @@ class PaginatedGridLayout
 constructor(
     private val viewModelFactory: PaginatedGridViewModel.Factory,
     @PaginatedBaseLayoutType private val delegateGridLayout: PaginatableGridLayout,
+    private val qsStyleRepository: QsStyleRepository,
 ) : GridLayout by delegateGridLayout {
     @Composable
     override fun ContentScope.TileGrid(
@@ -82,6 +87,15 @@ constructor(
         val pages =
             remember(tiles, rows, *delegateGridViewModel.pageKeys) {
                 delegateGridViewModel.splitIntoPages(tiles, rows)
+            }
+
+        val qsStyleSettings by qsStyleRepository.settings.collectAsStateWithLifecycle()
+        val qsStyle =
+            remember(qsStyleSettings) {
+                QsStyleUi(
+                    motorolaStyle = qsStyleSettings.motorolaStyle,
+                    showLabels = qsStyleSettings.showLabels,
+                )
             }
 
         val pagerState = rememberPagerState(0) { pages.size }
@@ -139,6 +153,7 @@ constructor(
             ) {
                 val page = pages[it]
 
+                CompositionLocalProvider(LocalQsStyle provides qsStyle) {
                 with(delegateGridLayout) {
                     TileGrid(
                         tiles = page,
@@ -146,6 +161,7 @@ constructor(
                         listening = listening,
                         enableRevealEffect = false,
                     )
+                }
                 }
             }
             FooterBar(

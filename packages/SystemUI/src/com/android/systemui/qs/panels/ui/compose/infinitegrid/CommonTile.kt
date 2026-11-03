@@ -103,6 +103,7 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileLabelBlurWidth
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelSettings
+import com.android.systemui.qs.panels.ui.compose.LocalQsStyle
 import com.android.systemui.qs.panels.ui.viewmodel.AccessibilityUiState
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
@@ -208,6 +209,7 @@ fun LargeTileLabels(
     isVisible: () -> Boolean = { true },
     accessibilityUiState: AccessibilityUiState? = null,
 ) {
+    if (!LocalQsStyle.current.showLabels) return
     val animatedLabelColor by animateColorAsState(colors.label, label = "QSTileLabelColor")
     val animatedSecondaryLabelColor by
         animateColorAsState(colors.secondaryLabel, label = "QSTileSecondaryLabelColor")
