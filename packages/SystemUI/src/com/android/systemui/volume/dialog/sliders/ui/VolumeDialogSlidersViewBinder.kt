@@ -58,6 +58,10 @@ constructor(
         val bottomSection: View = view.requireViewById(R.id.volume_dialog_bottom_section_container)
         val topSection: View = view.requireViewById(R.id.volume_dialog_top_section_container)
 
+        if (viewModel.showBlur) {
+            background.updateMainBackground()
+        }
+
         launchTraced("VDSVB#addTouchableBounds") {
             dialogViewModel.addTouchableBounds(mainSliderContainer, floatingSlidersContainer)
         }
@@ -94,6 +98,7 @@ constructor(
         if (viewModel.showBlur) {
             launchTraced("VDSVB#isBlurCurrentlySupported") {
                 windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
+                    background.setIsBlurSupported(supported)
                     for (child in floatingSlidersContainer.children) {
                         child.setIsBlurSupported(supported)
                     }
@@ -113,6 +118,22 @@ constructor(
                 R.dimen.volume_dialog_floating_slider_background_corner_radius
             )
         blurDrawable.setCornerRadius(dialogCornerRadius.toFloat())
+        blurDrawable.setBlurRadius(0)
+        background = LayerDrawable(arrayOf<Drawable>(blurDrawable, surfaceEffect))
+        setIsBlurSupported(windowRootViewBlurInteractor.isBlurCurrentlySupported.value)
+    }
+
+    private fun View.updateMainBackground() {
+        if (background is LayerDrawable) {
+            return
+        }
+        val surfaceEffect = background as GradientDrawable
+        val blurDrawable = viewRootImpl.createBackgroundBlurDrawable()
+        blurDrawable.setCornerRadius(
+            context.resources
+                .getDimensionPixelSize(R.dimen.volume_dialog_background_corner_radius)
+                .toFloat()
+        )
         blurDrawable.setBlurRadius(0)
         background = LayerDrawable(arrayOf<Drawable>(blurDrawable, surfaceEffect))
         setIsBlurSupported(windowRootViewBlurInteractor.isBlurCurrentlySupported.value)
