@@ -951,6 +951,7 @@ constructor(
                                 tiles = TileGrid,
                                 media = Media,
                                 mediaInRow = viewModel.qsMediaInRow,
+                                mediaOnTop = motorolaLayout != null,
                             )
                         }
                     }
@@ -1464,7 +1465,12 @@ fun QuickQuickSettingsLayout(
     }
 }
 
-/** [brightness] is nullable as it might not be there (e.g. on connected displays). */
+/**
+ * [brightness] is nullable as it might not be there (e.g. on connected displays).
+ *
+ * When [mediaOnTop] is set (Motorola style) and the media is not in a row with the tiles, the
+ * player is drawn above everything else instead of below the tile grid.
+ */
 @Composable
 @VisibleForTesting
 fun QuickSettingsLayout(
@@ -1472,6 +1478,7 @@ fun QuickSettingsLayout(
     tiles: @Composable () -> Unit,
     media: @Composable () -> Unit,
     mediaInRow: Boolean,
+    mediaOnTop: Boolean = false,
 ) {
     if (mediaInRow) {
         Column(
@@ -1492,9 +1499,15 @@ fun QuickSettingsLayout(
             verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            brightness()
-            tiles()
-            media()
+            if (mediaOnTop) {
+                media()
+                brightness()
+                tiles()
+            } else {
+                brightness()
+                tiles()
+                media()
+            }
         }
     }
 }
