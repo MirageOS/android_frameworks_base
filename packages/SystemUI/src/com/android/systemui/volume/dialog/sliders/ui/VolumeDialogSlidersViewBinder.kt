@@ -87,9 +87,6 @@ constructor(
                 )
                 floatingSliderViewBinders.fastForEachIndexed { index, sliderComponent ->
                     val sliderContainer = floatingSlidersContainer.getChildAt(index)
-                    if (viewModel.showBlur) {
-                        sliderContainer.updateBackground()
-                    }
                     bindSlider(sliderComponent, sliderContainer, arrayOf(sliderContainer))
                 }
             }
@@ -99,9 +96,6 @@ constructor(
             launchTraced("VDSVB#isBlurCurrentlySupported") {
                 windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
                     background.setIsBlurSupported(supported)
-                    for (child in floatingSlidersContainer.children) {
-                        child.setIsBlurSupported(supported)
-                    }
                 }
             }
         }
