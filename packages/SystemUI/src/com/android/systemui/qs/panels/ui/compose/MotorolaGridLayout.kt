@@ -20,7 +20,6 @@ import android.media.AudioManager
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,6 +47,7 @@ import com.android.systemui.brightness.domain.model.GammaBrightness
 import com.android.systemui.common.ui.compose.Icon as SysUiIcon
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.Tile
 import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
@@ -90,9 +90,11 @@ constructor(
         val bounceables = remember(blockTiles) { List(blockTiles.size) { BounceableTileViewModel() } }
         val scope = rememberCoroutineScope()
         val spacing = dimensionResource(R.dimen.qs_tile_margin_horizontal)
+        val count = blockTiles.size.coerceAtLeast(1)
+        val blockHeight = CommonTileDefaults.TileHeight * count + spacing * (count - 1)
 
         Row(
-            modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            modifier = modifier.fillMaxWidth().height(blockHeight),
             horizontalArrangement = spacedBy(spacing),
         ) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = spacedBy(spacing)) {
