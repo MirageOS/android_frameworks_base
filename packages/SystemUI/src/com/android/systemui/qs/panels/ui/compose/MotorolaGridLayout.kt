@@ -105,7 +105,7 @@ constructor(
             modifier = modifier.fillMaxWidth().height(blockHeight),
             horizontalArrangement = spacedBy(spacing),
         ) {
-            Column(modifier = Modifier.weight(1f), verticalArrangement = spacedBy(spacing)) {
+            Column(modifier = Modifier.weight(2.3f), verticalArrangement = spacedBy(spacing)) {
                 blockTiles.forEachIndexed { index, tile ->
                     Element(tile.spec.toElementKey(), Modifier) {
                         Tile(
@@ -129,9 +129,9 @@ constructor(
                     }
                 }
             }
-            VolumeColumn(Modifier.width(SliderWidth).fillMaxHeight())
+            VolumeColumn(Modifier.weight(1f).fillMaxHeight())
             if (brightnessViewModel != null) {
-                BrightnessColumn(brightnessViewModel, Modifier.width(SliderWidth).fillMaxHeight())
+                BrightnessColumn(brightnessViewModel, Modifier.weight(1f).fillMaxHeight())
             }
         }
         TileListener(blockTiles, listening)

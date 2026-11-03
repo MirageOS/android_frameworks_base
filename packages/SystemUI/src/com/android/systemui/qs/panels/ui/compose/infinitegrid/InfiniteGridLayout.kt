@@ -38,6 +38,7 @@ import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.EditTileListState
+import com.android.systemui.qs.panels.ui.compose.LocalQsStyle
 import com.android.systemui.qs.panels.ui.compose.PaginatableGridLayout
 import com.android.systemui.qs.panels.ui.compose.TileListener
 import com.android.systemui.qs.panels.ui.compose.bounceableInfo
@@ -88,10 +89,14 @@ constructor(
         val largeTilesSpan = viewModel.columnsWithMediaViewModel.largeSpan
         val largeTiles by viewModel.iconTilesViewModel.largeTilesState
         // Tiles or largeTiles may be updated while this is composed, so listen to any changes
+        val qsStyle = LocalQsStyle.current
         val sizedTiles =
-            remember(tiles, largeTiles, largeTilesSpan) {
+            remember(tiles, largeTiles, largeTilesSpan, qsStyle.motorolaStyle) {
                 tiles.map {
-                    SizedTileImpl(it, if (largeTiles.contains(it.spec)) largeTilesSpan else 1)
+                    SizedTileImpl(
+                        it,
+                        if (!qsStyle.motorolaStyle && largeTiles.contains(it.spec)) largeTilesSpan else 1,
+                    )
                 }
             }
         val squishiness by viewModel.squishinessViewModel.squishiness.collectAsStateWithLifecycle()
@@ -113,7 +118,7 @@ constructor(
             Element(it.tile.spec.toElementKey(), Modifier) {
                 Tile(
                     tile = it.tile,
-                    iconOnly = iconTilesViewModel.isIconTile(it.tile.spec),
+                    iconOnly = qsStyle.motorolaStyle || iconTilesViewModel.isIconTile(it.tile.spec),
                     squishiness = { squishiness },
                     tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                     coroutineScope = scope,

@@ -89,6 +89,7 @@ import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
 import com.android.systemui.qs.panels.ui.compose.LocalQsStyle
 import androidx.compose.ui.unit.dp as qsDp
+import androidx.compose.foundation.layout.padding as qsPadding
 import com.android.systemui.qs.panels.ui.compose.Tooltip
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ActiveIconCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ActiveTileCornerRadius
@@ -178,7 +179,13 @@ fun ContentScope.Tile(
             }
 
         // TODO(b/361789146): Draw the shapes instead of clipping
-        val tileShape by TileDefaults.animateTileShapeAsState(uiState)
+        val stockTileShape by TileDefaults.animateTileShapeAsState(uiState)
+        val tileShape =
+            if (iconOnly && LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
+                RoundedCornerShape(24.qsDp)
+            } else {
+                stockTileShape
+            }
         val animatedColor by animateColorAsState(colors.background, label = "QSTileBackgroundColor")
         val isDualTarget = uiState.handlesToggleClick
         val hasLongClickEffect = uiState.hasLongClickEffect
@@ -332,8 +339,9 @@ fun ContentScope.Tile(
                                 androidx.compose.material3.Text(
                                     text = uiState.label,
                                     color = colors.label,
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = MaterialTheme.typography.labelSmall,
                                     maxLines = 1,
+                                    modifier = Modifier.qsPadding(horizontal = 6.qsDp),
                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                 )

@@ -135,7 +135,8 @@ fun LargeTileContent(
     val isDualTarget = toggleClick != null
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = tileHorizontalArrangement(),
+        horizontalArrangement = if (LocalQsStyle.current.showLabels) tileHorizontalArrangement()
+            else Arrangement.Center,
         modifier = modifier,
     ) {
         // Icon
