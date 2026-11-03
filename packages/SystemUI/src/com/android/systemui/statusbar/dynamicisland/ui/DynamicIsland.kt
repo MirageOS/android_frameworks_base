@@ -39,6 +39,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -103,6 +112,18 @@ fun DynamicIsland(
 
     // Collapse when there is nothing left to show or the option was turned off.
     val hasContent = items.isNotEmpty() || media != null || flashlightOn
+    val pages =
+        buildList<IslandPage> {
+            items.indices.forEach { add(IslandPage.Chip(it)) }
+            if (flashlightOn) add(IslandPage.Flashlight)
+            if (media != null) add(IslandPage.Media)
+        }
+    var selectedPage by remember { mutableStateOf(0) }
+    var swipeDirection by remember { mutableStateOf(1) }
+    val haptic = LocalHapticFeedback.current
+    // A new or finished event brings the island back to the highest priority one.
+    LaunchedEffect(pages.size) { selectedPage = 0 }
+    val currentPage = pages.getOrNull(selectedPage) ?: pages.firstOrNull()
     val canExpand = expandOnTap && hasContent
     LaunchedEffect(canExpand) {
         if (!canExpand) expanded = false
@@ -121,32 +142,89 @@ fun DynamicIsland(
         // and the top padding, which are in regular dp, are brought back to it.
         CompositionLocalProvider(LocalDensity provides islandLayout.scaled(density)) {
             val gap = islandLayout.gap / islandLayout.scale
-            if (items.isNotEmpty()) {
-                IslandPill(
-                    item = items.first(),
-                    extraCount = items.size - 1 + (if (media != null) 1 else 0),
-                    gap = gap,
-                    clickable = expandOnTap,
-                    onClick = { expanded = !expanded },
-                    iconViewStore = iconViewStore,
-                    modifier = Modifier.padding(top = islandLayout.topPadding / islandLayout.scale),
-                )
-            } else if (flashlightOn) {
-                FlashlightIslandPill(
-                    gap = gap,
-                    clickable = onFlashlightOff != null,
-                    onClick = { onFlashlightOff?.invoke() },
-                    modifier = Modifier.padding(top = islandLayout.topPadding / islandLayout.scale),
-                )
-            } else if (media != null) {
-                MediaIslandPill(
-                    media = media,
-                    extraCount = 0,
-                    gap = gap,
-                    clickable = expandOnTap,
-                    onClick = { expanded = !expanded },
-                    modifier = Modifier.padding(top = islandLayout.topPadding / islandLayout.scale),
-                )
+            Box(
+                modifier =
+                    Modifier.thenIf(pages.size > 1) {
+                        Modifier.pointerInput(pages.size) {
+                            val threshold = 32.dp.toPx()
+                            var total = 0f
+                            detectHorizontalDragGestures(
+                                onDragStart = { total = 0f },
+                                onDragCancel = { total = 0f },
+                                onDragEnd = {
+                                    val count = pages.size
+                                    if (total < -threshold) {
+                                        swipeDirection = 1
+                                        selectedPage = (selectedPage + 1) % count
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    } else if (total > threshold) {
+                                        swipeDirection = -1
+                                        selectedPage = (selectedPage + count - 1) % count
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    }
+                                },
+                                onHorizontalDrag = { change, amount ->
+                                    change.consume()
+                                    total += amount
+                                },
+                            )
+                        }
+                    }
+            ) {
+                AnimatedContent(
+                    targetState = currentPage,
+                    transitionSpec = {
+                        (fadeIn(tween(180)) +
+                            slideInHorizontally(spring(dampingRatio = 0.8f, stiffness = 500f)) { full ->
+                                full / 3 * swipeDirection
+                            }) togetherWith
+                            (fadeOut(tween(120)) +
+                                slideOutHorizontally(tween(180)) { full ->
+                                    -full / 3 * swipeDirection
+                                }) using SizeTransform(clip = false)
+                    },
+                    contentAlignment = Alignment.TopCenter,
+                    label = "islandPage",
+                ) { page ->
+                    val pillModifier =
+                        Modifier.padding(top = islandLayout.topPadding / islandLayout.scale)
+                    when (page) {
+                        is IslandPage.Chip -> {
+                            val item = items.getOrNull(page.index)
+                            if (item != null) {
+                                IslandPill(
+                                    item = item,
+                                    extraCount = pages.size - 1,
+                                    gap = gap,
+                                    clickable = expandOnTap,
+                                    onClick = { expanded = !expanded },
+                                    iconViewStore = iconViewStore,
+                                    modifier = pillModifier,
+                                )
+                            }
+                        }
+                        IslandPage.Flashlight ->
+                            FlashlightIslandPill(
+                                gap = gap,
+                                clickable = onFlashlightOff != null,
+                                onClick = { onFlashlightOff?.invoke() },
+                                modifier = pillModifier,
+                            )
+                        IslandPage.Media -> {
+                            if (media != null) {
+                                MediaIslandPill(
+                                    media = media,
+                                    extraCount = pages.size - 1,
+                                    gap = gap,
+                                    clickable = expandOnTap,
+                                    onClick = { expanded = !expanded },
+                                    modifier = pillModifier,
+                                )
+                            }
+                        }
+                        null -> {}
+                    }
+                }
             }
         }
         // The popup stays alive until the exit animation is over.
@@ -302,3 +380,16 @@ private fun labelFor(kind: DynamicIslandKind): Int =
         DynamicIslandKind.RECORDER -> R.string.dynamic_island_label_recorder
         DynamicIslandKind.APP -> R.string.dynamic_island_label_app
     }
+
+/** One page of the island: a live update chip (by position), the flashlight or the media. */
+private sealed interface IslandPage {
+    class Chip(val index: Int) : IslandPage {
+        override fun equals(other: Any?) = other is Chip && other.index == index
+
+        override fun hashCode() = index
+    }
+
+    object Flashlight : IslandPage
+
+    object Media : IslandPage
+}
