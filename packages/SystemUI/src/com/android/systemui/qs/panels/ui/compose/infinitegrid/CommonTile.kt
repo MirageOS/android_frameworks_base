@@ -137,7 +137,7 @@ fun LargeTileContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = if (LocalQsStyle.current.showLabels) tileHorizontalArrangement()
             else Arrangement.Center,
-        modifier = modifier,
+        modifier = modifier.fillMaxHeight(),
     ) {
         // Icon
         val longPressLabel = longPressLabelSettings().takeIf { onLongClick != null }

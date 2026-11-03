@@ -904,7 +904,9 @@ constructor(
                                     MediaObject(
                                         mediaHost = viewModel.qsMediaHost,
                                         mediaViewModelFactory = viewModel.mediaViewModelFactory,
-                                        mediaPresentationStyle = MediaPresentationStyle.Default,
+                                        mediaPresentationStyle =
+                                            if (motorolaLayout != null) MediaPresentationStyle.Compact
+                                            else MediaPresentationStyle.Default,
                                         onSwipeToDismiss = viewModel::onMediaSwipeToDismiss,
                                         behavior = viewModel.qsMediaUiBehavior,
                                         visible = isListening,
