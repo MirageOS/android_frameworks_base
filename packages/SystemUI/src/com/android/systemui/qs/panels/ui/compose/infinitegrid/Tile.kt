@@ -87,6 +87,8 @@ import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
+import com.android.systemui.qs.panels.ui.compose.LocalQsStyle
+import androidx.compose.ui.unit.dp as qsDp
 import com.android.systemui.qs.panels.ui.compose.Tooltip
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ActiveIconCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ActiveTileCornerRadius
@@ -313,14 +315,39 @@ fun ContentScope.Tile(
                 ) {
                     val iconProvider: Context.() -> Icon = { getTileIcon(icon = icon) }
                     if (iconOnly) {
-                        SmallTileContent(
-                            iconProvider = iconProvider,
-                            color = colors.icon,
-                            modifier =
-                                Modifier.align(Alignment.Center).bounceScale {
-                                    currentBounceableInfo.bounceable.iconBounceScale
-                                },
-                        )
+                        if (LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
+                            androidx.compose.foundation.layout.Column(
+                                modifier = Modifier.align(Alignment.Center).fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.qsDp),
+                            ) {
+                                SmallTileContent(
+                                    iconProvider = iconProvider,
+                                    color = colors.icon,
+                                    modifier =
+                                        Modifier.bounceScale {
+                                            currentBounceableInfo.bounceable.iconBounceScale
+                                        },
+                                )
+                                androidx.compose.material3.Text(
+                                    text = uiState.label,
+                                    color = colors.label,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                )
+                            }
+                        } else {
+                            SmallTileContent(
+                                iconProvider = iconProvider,
+                                color = colors.icon,
+                                modifier =
+                                    Modifier.align(Alignment.Center).bounceScale {
+                                        currentBounceableInfo.bounceable.iconBounceScale
+                                    },
+                            )
+                        }
                     } else {
                         val iconShape by TileDefaults.animateIconShapeAsState(uiState)
                         val secondaryClick: (() -> Unit)? =
@@ -394,7 +421,14 @@ fun TileContainer(
     Box(
         modifier =
             modifier
-                .height(TileHeight)
+                .height(
+                    TileHeight +
+                        if (LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
+                            24.qsDp
+                        } else {
+                            0.qsDp
+                        }
+                )
                 .fillMaxWidth()
                 .tileCombinedClickable(
                     onClick = onClick ?: {},
