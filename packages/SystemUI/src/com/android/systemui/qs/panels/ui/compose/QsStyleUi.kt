@@ -19,7 +19,12 @@ package com.android.systemui.qs.panels.ui.compose
 import androidx.compose.runtime.compositionLocalOf
 
 /** The Quick Settings style options as seen by the tile composables. */
-data class QsStyleUi(val motorolaStyle: Boolean = false, val showLabels: Boolean = true)
+data class QsStyleUi(
+    val motorolaStyle: Boolean = false,
+    val showLabels: Boolean = true,
+    /** Tiles drawn inside a shared card: their own background is transparent. */
+    val flatTiles: Boolean = false,
+)
 
 /** Provided by [PaginatedGridLayout]. Defaults to the stock look when nothing provides it. */
 val LocalQsStyle = compositionLocalOf { QsStyleUi() }

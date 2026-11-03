@@ -26,6 +26,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -94,18 +100,30 @@ constructor(
         val scope = rememberCoroutineScope()
         val spacing = dimensionResource(R.dimen.qs_tile_margin_horizontal)
         val count = blockTiles.size.coerceAtLeast(1)
-        val blockHeight = CommonTileDefaults.TileHeight * count + spacing * (count - 1)
+        val blockHeight = CommonTileDefaults.TileHeight * count + 24.dp
 
         val qsStyleSettings by qsStyleRepository.settings.collectAsStateWithLifecycle()
         CompositionLocalProvider(
             LocalQsStyle provides
-                QsStyleUi(qsStyleSettings.motorolaStyle, qsStyleSettings.showLabels)
+                QsStyleUi(
+                    qsStyleSettings.motorolaStyle,
+                    qsStyleSettings.showLabels,
+                    flatTiles = true,
+                )
         ) {
         Row(
             modifier = modifier.fillMaxWidth().height(blockHeight),
             horizontalArrangement = spacedBy(spacing),
         ) {
-            Column(modifier = Modifier.weight(2.3f), verticalArrangement = spacedBy(spacing)) {
+            Column(
+                modifier =
+                    Modifier.weight(2.3f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .padding(vertical = 12.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
                 blockTiles.forEachIndexed { index, tile ->
                     Element(tile.spec.toElementKey(), Modifier) {
                         Tile(

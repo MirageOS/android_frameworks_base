@@ -186,7 +186,12 @@ fun ContentScope.Tile(
             } else {
                 stockTileShape
             }
-        val animatedColor by animateColorAsState(colors.background, label = "QSTileBackgroundColor")
+        val flat = LocalQsStyle.current.flatTiles && uiState.handlesToggleClick
+        val animatedColor by
+            animateColorAsState(
+                if (flat) Color.Transparent else colors.background,
+                label = "QSTileBackgroundColor",
+            )
         val isDualTarget = uiState.handlesToggleClick
         val hasLongClickEffect = uiState.hasLongClickEffect
         val interactionSource = remember { MutableInteractionSource() }
