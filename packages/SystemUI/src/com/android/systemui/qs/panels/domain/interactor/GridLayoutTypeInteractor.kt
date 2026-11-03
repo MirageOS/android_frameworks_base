@@ -18,17 +18,26 @@ package com.android.systemui.qs.panels.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.qs.panels.data.repository.GridLayoutTypeRepository
+import com.android.systemui.qs.panels.data.repository.QsStyleRepository
 import com.android.systemui.qs.panels.shared.model.GridLayoutType
+import com.android.systemui.qs.panels.shared.model.MotorolaGridLayoutType
+import com.android.systemui.qs.panels.shared.model.PaginatedGridLayoutType
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 
 @SysUISingleton
 class GridLayoutTypeInteractor
 @Inject
-constructor(private val repo: GridLayoutTypeRepository, shadeModeInteractor: ShadeModeInteractor) {
+constructor(
+    private val repo: GridLayoutTypeRepository,
+    private val styleRepo: QsStyleRepository,
+    shadeModeInteractor: ShadeModeInteractor,
+) {
     val layout: Flow<GridLayoutType> =
         shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
             when (shadeMode) {
@@ -36,4 +45,12 @@ constructor(private val repo: GridLayoutTypeRepository, shadeModeInteractor: Sha
                 else -> repo.defaultLayoutType
             }
         }
+            .combine(styleRepo.settings) { type, style ->
+                if (style.motorolaStyle && type == PaginatedGridLayoutType) {
+                    MotorolaGridLayoutType
+                } else {
+                    type
+                }
+            }
+            .distinctUntilChanged()
 }

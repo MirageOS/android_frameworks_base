@@ -126,6 +126,17 @@ interface PanelsModuleBase {
         }
 
         @Provides
+        @IntoSet
+        fun provideMotorolaGridLayout(
+            gridLayout: com.android.systemui.qs.panels.ui.compose.MotorolaGridLayout
+        ): Pair<GridLayoutType, GridLayout> {
+            return Pair(
+                com.android.systemui.qs.panels.shared.model.MotorolaGridLayoutType,
+                gridLayout,
+            )
+        }
+
+        @Provides
         fun provideGridLayoutMap(
             entries: Set<@JvmSuppressWildcards Pair<GridLayoutType, GridLayout>>
         ): Map<GridLayoutType, GridLayout> {

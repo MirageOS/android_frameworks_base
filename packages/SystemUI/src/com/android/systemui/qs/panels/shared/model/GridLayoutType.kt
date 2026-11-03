@@ -28,3 +28,6 @@ data object InfiniteGridLayoutType : GridLayoutType
 
 /** Grid type for a paginated list of tiles. It will delegate to some other layout type. */
 data object PaginatedGridLayoutType : GridLayoutType
+
+/** Grid type for the Motorola style Quick Settings. Chosen by the qs_style_motorola option. */
+data object MotorolaGridLayoutType : GridLayoutType
