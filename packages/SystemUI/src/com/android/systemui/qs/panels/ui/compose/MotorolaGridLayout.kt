@@ -100,15 +100,18 @@ constructor(
         val scope = rememberCoroutineScope()
         val spacing = dimensionResource(R.dimen.qs_tile_margin_horizontal)
         val count = blockTiles.size.coerceAtLeast(1)
-        val blockHeight = CommonTileDefaults.TileHeight * count + 24.dp
+        val blockHeight = CommonTileDefaults.TileHeight * 2 + 24.dp
+        val rowHeight = (blockHeight - 24.dp) / count
 
         val qsStyleSettings by qsStyleRepository.settings.collectAsStateWithLifecycle()
         CompositionLocalProvider(
             LocalQsStyle provides
                 QsStyleUi(
                     qsStyleSettings.motorolaStyle,
-                    qsStyleSettings.showLabels,
+                    true,
                     flatTiles = true,
+                    tileHeight = rowHeight,
+                    compactLabels = true,
                 )
         ) {
         Row(

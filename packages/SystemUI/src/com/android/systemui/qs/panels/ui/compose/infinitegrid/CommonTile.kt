@@ -217,7 +217,7 @@ fun LargeTileLabels(
     Column(verticalArrangement = Arrangement.Center, modifier = modifier.fillMaxHeight()) {
         TileLabel(
             text = label,
-            style = MaterialTheme.typography.titleSmallEmphasized,
+            style = if (LocalQsStyle.current.compactLabels) MaterialTheme.typography.labelMedium else MaterialTheme.typography.titleSmallEmphasized,
             color = { animatedLabelColor },
             isVisible = isVisible,
         )
@@ -225,7 +225,7 @@ fun LargeTileLabels(
             TileLabel(
                 secondaryLabel ?: "",
                 color = { animatedSecondaryLabelColor },
-                style = MaterialTheme.typography.labelMedium,
+                style = if (LocalQsStyle.current.compactLabels) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium,
                 isVisible = isVisible,
                 modifier =
                     Modifier.thenIf(

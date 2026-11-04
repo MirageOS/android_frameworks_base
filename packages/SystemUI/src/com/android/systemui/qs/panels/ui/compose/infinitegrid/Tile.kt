@@ -181,7 +181,7 @@ fun ContentScope.Tile(
         // TODO(b/361789146): Draw the shapes instead of clipping
         val stockTileShape by TileDefaults.animateTileShapeAsState(uiState)
         val tileShape =
-            if (iconOnly && LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
+            if (iconOnly && LocalQsStyle.current.motorolaStyle) {
                 RoundedCornerShape(24.qsDp)
             } else {
                 stockTileShape
@@ -434,6 +434,7 @@ fun TileContainer(
     Box(
         modifier =
             modifier
+                .then(LocalQsStyle.current.tileHeight?.let { Modifier.height(it) } ?: Modifier)
                 .height(
                     TileHeight +
                         if (iconOnly && LocalQsStyle.current.let { it.motorolaStyle && it.showLabels }) {
