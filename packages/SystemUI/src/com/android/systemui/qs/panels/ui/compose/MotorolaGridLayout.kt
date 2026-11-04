@@ -100,7 +100,8 @@ constructor(
         val scope = rememberCoroutineScope()
         val spacing = dimensionResource(R.dimen.qs_tile_margin_horizontal)
         val count = blockTiles.size.coerceAtLeast(1)
-        val rowHeight = 56.dp
+        val isLandscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val rowHeight = if (isLandscape) 48.dp else 56.dp
         val rowGap = 4.dp
         val blockHeight = rowHeight * 3 + rowGap * 2 + 24.dp
 

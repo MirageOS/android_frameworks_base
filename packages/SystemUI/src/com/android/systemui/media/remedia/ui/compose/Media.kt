@@ -664,7 +664,7 @@ private fun ContentScope.CardForegroundContent(
                 .semantics { contentDescription = viewModel.contentDescription }
     ) {
         // Always add the first/top row, regardless of presentation style.
-        Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().height(80.dp).androidx.compose.ui.draw.clipToBounds()) {
             // Icon.
             Element(key = Media.Elements.AppIcon, modifier = modifier) {
                 Icon(
