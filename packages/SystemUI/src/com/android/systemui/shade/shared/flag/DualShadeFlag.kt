@@ -29,6 +29,9 @@ object DualShadeFlag {
     /** The aconfig flag name. */
     const val FLAG_NAME = Flags.FLAG_DUAL_SHADE
 
+    /** MirageOS: force Dual Shade on. */
+    const val FORCE_ENABLED = true
+
     /** A token used for dependency declaration. */
     val token: FlagToken
         get() = FlagToken(FLAG_NAME, isEnabled)
@@ -40,7 +43,7 @@ object DualShadeFlag {
     /** Whether the feature is enabled. */
     @JvmStatic
     inline val isEnabled
-        get() = (dualShade() || isDesktopDevice) && SceneContainerFlag.isEnabled
+        get() = (dualShade() || isDesktopDevice || FORCE_ENABLED) && SceneContainerFlag.isEnabled
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

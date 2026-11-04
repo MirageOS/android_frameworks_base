@@ -95,6 +95,7 @@ import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.TileDetails
+import com.android.systemui.qs.panels.ui.compose.MotorolaGridLayout
 import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.panels.ui.compose.toolbar.Toolbar
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
@@ -387,6 +388,8 @@ private fun ContentScope.QuickSettingsLayout(
         VerticalSeparator(QuickSettingsShade.Dimensions.ToolbarBottomPadding)
 
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+            val motorolaLayout =
+                qsContainerViewModel.tileGridViewModel.gridLayout as? MotorolaGridLayout
             Media(
                 viewModelFactory = qsContainerViewModel.mediaViewModelFactory,
                 presentationStyle = MediaPresentationStyle.Compact,
@@ -400,7 +403,21 @@ private fun ContentScope.QuickSettingsLayout(
                 VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
             }
 
-            if (qsContainerViewModel.isBrightnessSliderVisible) {
+            if (motorolaLayout != null) {
+                with(motorolaLayout) {
+                    HeaderBlock(
+                        tiles = qsContainerViewModel.tileGridViewModel.tileViewModels,
+                        listening = { true },
+                        brightnessViewModel =
+                            qsContainerViewModel.brightnessSliderViewModel.takeIf {
+                                qsContainerViewModel.isBrightnessSliderVisible
+                            },
+                    )
+                }
+                VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
+            }
+
+            if (motorolaLayout == null && qsContainerViewModel.isBrightnessSliderVisible) {
                 Box(
                     Modifier.systemGestureExclusionInShade(
                         enabled = { layoutState.transitionState is TransitionState.Idle }
@@ -420,7 +437,7 @@ private fun ContentScope.QuickSettingsLayout(
                 }
             }
 
-            if (volumeSliderViewModel != null) {
+            if (motorolaLayout == null && volumeSliderViewModel != null) {
                 val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
 
                 VerticalSeparator(QuickSettingsShade.Dimensions.VolumeSliderExtraPadding)
@@ -483,6 +500,8 @@ private fun ContentScope.QuickSettingsLayout(
                 viewModel = qsContainerViewModel.tileGridViewModel,
                 modifier = Modifier.fillMaxWidth(),
                 enableRevealEffect = TileRevealFlag.isEnabled,
+                excludedSpecs =
+                    if (motorolaLayout != null) MotorolaGridLayout.HeaderSpecs else emptySet(),
             )
 
             val buildNumberViewModel =
