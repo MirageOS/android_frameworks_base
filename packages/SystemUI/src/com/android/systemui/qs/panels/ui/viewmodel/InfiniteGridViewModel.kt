@@ -19,6 +19,7 @@ package com.android.systemui.qs.panels.ui.viewmodel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
+import com.android.systemui.qs.panels.data.repository.QsStyleRepository
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.dialog.QSResetDialogDelegate
 import com.android.systemui.qs.panels.ui.viewmodel.PaginatableViewModel.Companion.splitInRows
@@ -39,6 +40,7 @@ constructor(
     val snapshotViewModelFactory: InfiniteGridSnapshotViewModel.Factory,
     val resetDialogDelegateFactory: QSResetDialogDelegate.Factory,
     val editTopBarActionsViewModelFactory: EditTopBarActionsViewModel.Factory,
+    private val qsStyleRepository: QsStyleRepository,
 ) : ExclusiveActivatable(), PaginatableViewModel {
     private val hydrator = Hydrator("InfiniteGridViewModel.hydrator")
 
@@ -55,6 +57,7 @@ constructor(
                 columnsWithMediaViewModel.columns,
                 columnsWithMediaViewModel.largeSpan,
                 iconTilesViewModel.largeTilesState.value,
+                qsStyleRepository.settings.value.motorolaStyle,
             )
 
     override fun splitIntoPages(tiles: List<TileViewModel>, rows: Int): List<List<TileViewModel>> {
@@ -67,6 +70,8 @@ constructor(
     }
 
     private fun widthOf(spec: TileSpec): Int {
+        // Motorola style draws every tile 1x1, so paginate the same way
+        if (qsStyleRepository.settings.value.motorolaStyle) return 1
         return if (iconTilesViewModel.largeTilesState.value.contains(spec))
             columnsWithMediaViewModel.largeSpan
         else 1
