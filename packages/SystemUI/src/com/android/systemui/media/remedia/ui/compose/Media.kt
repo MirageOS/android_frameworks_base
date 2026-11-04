@@ -1,3 +1,4 @@
+import androidx.compose.ui.draw.clipToBounds
 /*
  * Copyright (C) 2025 The Android Open Source Project
  *
@@ -664,7 +665,7 @@ private fun ContentScope.CardForegroundContent(
                 .semantics { contentDescription = viewModel.contentDescription }
     ) {
         // Always add the first/top row, regardless of presentation style.
-        Box(modifier = Modifier.fillMaxWidth().height(80.dp).androidx.compose.ui.draw.clipToBounds()) {
+        Box(modifier = Modifier.fillMaxWidth().height(80.dp).clip(RoundedCornerShape(24.dp))) {
             // Icon.
             Element(key = Media.Elements.AppIcon, modifier = modifier) {
                 Icon(
