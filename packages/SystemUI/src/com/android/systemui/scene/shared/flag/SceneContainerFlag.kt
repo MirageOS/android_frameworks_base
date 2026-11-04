@@ -26,6 +26,9 @@ object SceneContainerFlag {
     /** The flag description -- not an aconfig flag name */
     const val DESCRIPTION = "SceneContainerFlag"
 
+    /** Força o scene container ligado (Mirage). */
+    const val FORCE_ENABLED = true
+
     /**
      * Whether the flag is enabled on the current variant. If this is set to `false`, then it the
      * value of the actual aconfig flag doesn't matter and [isEnabled] will always return `false`.
@@ -40,7 +43,7 @@ object SceneContainerFlag {
     @JvmStatic
     inline val isEnabled
         // NOTE: Changes should also be made in @EnableSceneContainer
-        get() = sceneContainer() && isEnabledOnVariant
+        get() = (sceneContainer() || FORCE_ENABLED) && isEnabledOnVariant
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
