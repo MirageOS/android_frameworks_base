@@ -100,8 +100,9 @@ constructor(
         val scope = rememberCoroutineScope()
         val spacing = dimensionResource(R.dimen.qs_tile_margin_horizontal)
         val count = blockTiles.size.coerceAtLeast(1)
-        val blockHeight = CommonTileDefaults.TileHeight * 2 + 24.dp
-        val rowHeight = (blockHeight - 24.dp) / count
+        val rowHeight = 56.dp
+        val rowGap = 4.dp
+        val blockHeight = rowHeight * 3 + rowGap * 2 + 24.dp
 
         val qsStyleSettings by qsStyleRepository.settings.collectAsStateWithLifecycle()
         CompositionLocalProvider(
@@ -127,7 +128,7 @@ constructor(
                             MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = PanelAlpha)
                         )
                         .padding(vertical = 12.dp),
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(rowGap, androidx.compose.ui.Alignment.CenterVertically),
             ) {
                 blockTiles.forEachIndexed { index, tile ->
                     Element(tile.spec.toElementKey(), Modifier) {
