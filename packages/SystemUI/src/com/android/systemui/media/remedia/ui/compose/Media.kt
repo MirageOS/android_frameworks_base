@@ -1,4 +1,3 @@
-import androidx.compose.ui.draw.clipToBounds
 /*
  * Copyright (C) 2025 The Android Open Source Project
  *
@@ -18,6 +17,10 @@ import androidx.compose.ui.draw.clipToBounds
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.android.systemui.media.remedia.ui.compose
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.pointer.PointerInputChange
 
 import android.util.Log
 import android.view.ViewConfiguration
@@ -116,7 +119,6 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.ContentScale
@@ -136,7 +138,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceIn
@@ -665,7 +666,36 @@ private fun ContentScope.CardForegroundContent(
                 .semantics { contentDescription = viewModel.contentDescription }
     ) {
         // Always add the first/top row, regardless of presentation style.
-        Box(modifier = Modifier.fillMaxWidth().height(80.dp).clip(RoundedCornerShape(24.dp))) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .pointerInput(Unit) {
+                    var totalDrag = 0f
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            if (totalDrag > 80f || totalDrag < -80f) {
+                                viewModel.onLongClick?.invoke()
+                            }
+                            totalDrag = 0f
+                        },
+                        onHorizontalDrag = { change: PointerInputChange, dragAmount: Float ->
+                            change.consume()
+                            totalDrag += dragAmount
+                        }
+                    )
+                }
+        ) {
+            // Barra de progresso minimalista (Bottom Seekbar)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(colorScheme.primary.copy(alpha = 0.5f))
+            )
+
             // Icon.
             Element(key = Media.Elements.AppIcon, modifier = modifier) {
                 Icon(

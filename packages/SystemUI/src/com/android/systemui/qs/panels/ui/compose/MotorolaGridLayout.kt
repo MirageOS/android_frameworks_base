@@ -15,6 +15,10 @@
  */
 
 package com.android.systemui.qs.panels.ui.compose
+import com.android.systemui.qs.panels.ui.compose.VerticalPillSlider
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 
 import android.media.AudioManager
 import androidx.compose.foundation.Canvas
@@ -105,6 +109,8 @@ constructor(
         val rowGap = 4.dp
         val blockHeight = rowHeight * 3 + rowGap * 2 + 24.dp
 
+        val haptics = LocalHapticFeedback.current
+        val isDark = isSystemInDarkTheme()
         val qsStyleSettings by qsStyleRepository.settings.collectAsStateWithLifecycle()
         CompositionLocalProvider(
             LocalQsStyle provides
@@ -126,7 +132,7 @@ constructor(
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(32.dp))
                         .background(
-                            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = PanelAlpha)
+                            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = if (isDark) 0.75f else PanelAlpha)
                         )
                         .padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(rowGap, androidx.compose.ui.Alignment.CenterVertically),
@@ -184,7 +190,7 @@ constructor(
             enabled = state.isEnabled,
             trackAlpha = PanelAlpha,
             modifier = modifier,
-        ) { tint ->
+        ) @Composable { tint: Color ->
             val icon = state.icon
             if (icon != null) {
                 SysUiIcon(icon = icon, tint = tint, modifier = Modifier.size(24.dp))
@@ -202,7 +208,7 @@ constructor(
         var last by remember { mutableIntStateOf(current) }
         VerticalPillSlider(
             fraction = ((current - min).toFloat() / span).coerceIn(0f, 1f),
-            onFractionChange = { f ->
+            onFractionChange = { f: Float ->
                 last = (min + f * span).roundToInt().coerceIn(min, max)
                 scope.launch { viewModel.onDrag(Drag.Dragging(GammaBrightness(last))) }
             },
@@ -211,7 +217,7 @@ constructor(
             },
             trackAlpha = PanelAlpha,
             modifier = modifier,
-        ) { tint ->
+        ) @Composable { tint: Color ->
             SunIcon(tint)
         }
     }
