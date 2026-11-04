@@ -23,6 +23,7 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import android.widget.TextView
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -58,6 +59,7 @@ object WifiViewBinder {
         val activityInView = view.requireViewById<ImageView>(R.id.wifi_in)
         val activityOutView = view.requireViewById<ImageView>(R.id.wifi_out)
         val activityContainerView = view.requireViewById<View>(R.id.inout_container)
+        val standardView = view.requireViewById<TextView>(R.id.wifi_standard)
 
         view.isVisible = true
         iconView.isVisible = true
@@ -107,6 +109,7 @@ object WifiViewBinder {
                         iconView.imageTintList = tintList
                         activityInView.imageTintList = tintList
                         activityOutView.imageTintList = tintList
+                        standardView.setTextColor(tintList)
                         dotView.setDecorColor(tint)
                     }
                 }
@@ -128,6 +131,22 @@ object WifiViewBinder {
                 launch {
                     viewModel.isActivityContainerVisible.distinctUntilChanged().collect { visible ->
                         activityContainerView.isVisible = visible
+                    }
+                }
+
+                launch {
+                    viewModel.wifiStandardText.distinctUntilChanged().collect { label ->
+                        standardView.text = label
+                        standardView.isVisible = label != null
+                        // Make room for the number so it never covers the next icon.
+                        val params = iconView.layoutParams as ViewGroup.MarginLayoutParams
+                        val reserved =
+                            if (label == null) 0
+                            else Math.ceil(standardView.paint.measureText(label).toDouble()).toInt()
+                        if (params.marginEnd != reserved) {
+                            params.marginEnd = reserved
+                            iconView.layoutParams = params
+                        }
                     }
                 }
 

@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * A common view model interface that can be used for delegation between [WifiViewModel] and
@@ -36,4 +37,10 @@ interface WifiViewModelCommon {
 
     /** True if the activity container view should be visible. */
     val isActivityContainerVisible: Flow<Boolean>
+
+    /**
+     * The Wi-Fi generation to show next to the icon ("4", "5", "6", "7"), or null to show nothing.
+     */
+    val wifiStandardText: Flow<String?>
+        get() = flowOf(null)
 }

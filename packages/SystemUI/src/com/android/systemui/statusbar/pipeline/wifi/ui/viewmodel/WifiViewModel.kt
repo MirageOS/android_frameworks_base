@@ -24,6 +24,7 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.pipeline.dagger.WifiTableLog
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiStandardRepository
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractor
 import com.android.systemui.statusbar.pipeline.wifi.shared.WifiConstants
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
@@ -35,6 +36,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -56,6 +58,7 @@ constructor(
     interactor: WifiInteractor,
     @Background scope: CoroutineScope,
     wifiConstants: WifiConstants,
+    wifiStandardRepository: WifiStandardRepository,
 ) : WifiViewModelCommon {
     override val wifiIcon: StateFlow<WifiIcon> =
         combine(
@@ -86,6 +89,21 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = WifiIcon.Hidden,
             )
+
+    /** The Wi-Fi generation, shown only while the icon is and the user left the option on. */
+    override val wifiStandardText: Flow<String?> =
+        combine(wifiIcon, wifiStandardRepository.isEnabled, wifiStandardRepository.wifiStandard) {
+                icon,
+                enabled,
+                standard ->
+                if (enabled && icon is WifiIcon.Visible) {
+                    WifiStandardRepository.labelOf(standard)
+                } else {
+                    null
+                }
+            }
+            .distinctUntilChanged()
+            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
     /** The wifi activity status. Null if we shouldn't display the activity status. */
     private val activity: Flow<DataActivityModel?> =

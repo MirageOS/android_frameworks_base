@@ -57,6 +57,18 @@
                 android:id="@+id/wifi_signal"
                 android:layout_height="@dimen/status_bar_wifi_signal_size"
                 android:layout_width="@dimen/status_bar_wifi_signal_size" />
+
+            <!-- Geração do Wi-Fi (4, 5, 6, 7). Controlada por Settings.System status_bar_wifi_standard. -->
+            <TextView
+                android:id="@+id/wifi_standard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:includeFontPadding="false"
+                android:importantForAccessibility="no"
+                android:textSize="8sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
         </FrameLayout>
 
         <View
