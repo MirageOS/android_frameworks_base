@@ -330,8 +330,9 @@ constructor(
                             quickQuickSettingsToQuickSettings(
                                 viewModel::animateTilesExpansion::get,
                                 isMotorola = {
-                                    viewModel.containerViewModel.tileGridViewModel.gridLayout
-                                        is MotorolaGridLayout
+                                    val layout =
+                                        viewModel.containerViewModel.tileGridViewModel.gridLayout
+                                    layout is MotorolaGridLayout
                                 },
                             )
                         }
