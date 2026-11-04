@@ -120,7 +120,9 @@ constructor(
                     Modifier.weight(2.3f)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(32.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = PanelAlpha)
+                        )
                         .padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -175,6 +177,7 @@ constructor(
             onFractionChange = { viewModel.onValueChanged(state, range.start + it * span) },
             onFractionChangeFinished = { viewModel.onValueChangeFinished() },
             enabled = state.isEnabled,
+            trackAlpha = PanelAlpha,
             modifier = modifier,
         ) { tint ->
             val icon = state.icon
@@ -201,6 +204,7 @@ constructor(
             onFractionChangeFinished = {
                 scope.launch { viewModel.onDrag(Drag.Stopped(GammaBrightness(last))) }
             },
+            trackAlpha = PanelAlpha,
             modifier = modifier,
         ) { tint ->
             SunIcon(tint)
@@ -212,6 +216,9 @@ constructor(
         val HeaderOrder = listOf("wifi", "cell", "bt")
         val HeaderSpecs = HeaderOrder.toSet()
         private val SliderWidth = 64.dp
+
+        /** Fill alpha of the header card and sliders so the shade blur shows through. */
+        private const val PanelAlpha = 0.6f
     }
 }
 

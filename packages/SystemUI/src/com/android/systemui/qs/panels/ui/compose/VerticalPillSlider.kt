@@ -46,6 +46,8 @@ fun VerticalPillSlider(
     onFractionChangeFinished: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /** Alpha of the track. Below 1f the shade blur shows through (Motorola style). */
+    trackAlpha: Float = 1f,
     icon: @Composable (tint: Color) -> Unit,
 ) {
     val onChange by rememberUpdatedState(onFractionChange)
@@ -59,7 +61,7 @@ fun VerticalPillSlider(
         modifier =
             modifier
                 .clip(RoundedCornerShape(32.dp))
-                .background(scheme.surfaceContainerHighest)
+                .background(scheme.surfaceContainerHighest.copy(alpha = trackAlpha))
                 .pointerInput(enabled) {
                     if (!enabled) return@pointerInput
                     detectTapGestures { offset ->

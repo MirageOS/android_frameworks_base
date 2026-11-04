@@ -685,6 +685,10 @@ constructor(
         val squishiness by
             viewModel.quickQuickSettingsViewModel.squishinessViewModel.squishiness
                 .collectAsStateWithLifecycle()
+        // Motorola style uses the same compact player in QQS and QS, so the shared media element
+        // does not have to morph between two sizes while the panel is dragged.
+        val motorolaQqs =
+            viewModel.containerViewModel.tileGridViewModel.gridLayout is MotorolaGridLayout
 
         Column(modifier = modifier.sysuiResTag(ResIdTags.quickQsPanel)) {
             Box(
@@ -744,7 +748,9 @@ constructor(
                                 modifier = Modifier.requiredHeightIn(max = Dp.Infinity),
                                 mediaHost = viewModel.qqsMediaHost,
                                 mediaPresentationStyle =
-                                    if (viewModel.qqsMediaInRow) {
+                                    if (motorolaQqs) {
+                                        MediaPresentationStyle.Compact
+                                    } else if (viewModel.qqsMediaInRow) {
                                         MediaPresentationStyle.Compressed
                                     } else {
                                         MediaPresentationStyle.Default
@@ -1480,7 +1486,22 @@ fun QuickSettingsLayout(
     mediaInRow: Boolean,
     mediaOnTop: Boolean = false,
 ) {
-    if (mediaInRow) {
+    if (mediaInRow && mediaOnTop) {
+        // Motorola landscape: header block and tiles on one side, the player on the other.
+        Row(
+            horizontalArrangement = spacedBy(QuickSettingsShade.Dimensions.HorizontalPadding),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
+            ) {
+                brightness()
+                tiles()
+            }
+            Box(modifier = Modifier.weight(1f)) { media() }
+        }
+    } else if (mediaInRow) {
         Column(
             verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
