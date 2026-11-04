@@ -1959,7 +1959,7 @@ object Media {
 
     const val TAG = "Media"
     val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
-    val DEFAULT_HEIGHT = 176.dp
+    val DEFAULT_HEIGHT = 80.dp
     val COMPRESSED_HEIGHT = 128.dp
     val COMPACT_HEIGHT = 80.dp
 }
