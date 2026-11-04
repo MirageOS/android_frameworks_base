@@ -57,6 +57,12 @@ import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScrimController
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
+import android.content.Context
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.os.UserHandle
+import android.provider.Settings
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.Lazy
 import java.io.PrintWriter
@@ -88,6 +94,7 @@ constructor(
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     private val focusedDisplayRepository: FocusedDisplayRepository,
     @Application private val applicationScope: CoroutineScope,
+    @Application private val appContext: Context,
     private val desktopModeRepository: DesktopModeRepository,
     dumpManager: DumpManager,
 ) : ShadeExpansionListener, Dumpable {
@@ -104,6 +111,11 @@ constructor(
         private const val PUSHBACK_SCALE_FOR_APP = 0.025f
 
         private const val TAG = "DepthController"
+
+        /** Settings.System, 0..200 (%). 100 = desfoque padrão. Escrita pelo Settings. */
+        private const val QS_BLUR_LEVEL_KEY = "qs_blur_level"
+        private const val QS_BLUR_LEVEL_DEFAULT = 100
+        private const val QS_BLUR_LEVEL_MAX = 200
     }
 
     private val shadeDisplayId = shadeDisplaysRepository.get().displayId
@@ -132,6 +144,28 @@ constructor(
 
     // Only for dumpsys
     private var lastAppliedBlur = 0
+
+    /** Multiplicador do raio de desfoque do shade, vindo do nível escolhido nas Configurações. */
+    @Volatile private var qsBlurScale = 1f
+
+    private val qsBlurObserver =
+        object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                qsBlurScale = readQsBlurScale()
+                if (::root.isInitialized) {
+                    scheduleUpdate()
+                }
+            }
+        }
+
+    private fun readQsBlurScale(): Float =
+        Settings.System.getIntForUser(
+                appContext.contentResolver,
+                QS_BLUR_LEVEL_KEY,
+                QS_BLUR_LEVEL_DEFAULT,
+                UserHandle.USER_CURRENT,
+            )
+            .coerceIn(0, QS_BLUR_LEVEL_MAX) / 100f
 
     private var isHomeFocused = true
 
@@ -275,13 +309,18 @@ constructor(
             ShadeInterpolation.getNotificationScrimAlpha(qsPanelExpansion) * shadeExpansion
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(qsExpandedRatio))
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(transitionToFullShadeProgress))
-        var shadeRadius = max(combinedBlur, wakeAndUnlockBlurRadius)
+        // The user's blur level only scales the shade blur, not the wake and unlock one. The
+        // wallpaper zoom keeps following the unscaled radius so only the blur itself changes.
+        var unscaledRadius = max(combinedBlur, wakeAndUnlockBlurRadius)
+        var shadeRadius = max(combinedBlur * qsBlurScale, wakeAndUnlockBlurRadius)
 
         if (areBlursDisabledForAppLaunch || blursDisabledForUnlock) {
+            unscaledRadius = 0f
             shadeRadius = 0f
         }
 
         // Brightness slider removes blur
+        unscaledRadius *= (1 - brightnessMirrorSpring.ratio)
         shadeRadius *= (1 - brightnessMirrorSpring.ratio)
 
         var blur = shadeRadius.toInt()
@@ -292,8 +331,8 @@ constructor(
                 // When the shade is in another display, we don't want to zoom out the background.
                 // Only the default display is supported right now.
                 !isShadeOnDefaultDisplay -> 0f
-                shadeRadius != wakeAndUnlockBlurRadius ->
-                    blurRadiusToZoomOut(blurRadius = shadeRadius)
+                unscaledRadius != wakeAndUnlockBlurRadius ->
+                    blurRadiusToZoomOut(blurRadius = unscaledRadius)
                 else -> 0f
             }
         // Make blur be 0 if it is necessary to stop blur effect.
@@ -508,6 +547,13 @@ constructor(
     }
 
     private fun initBlurListeners() {
+        qsBlurScale = readQsBlurScale()
+        appContext.contentResolver.registerContentObserver(
+            Settings.System.getUriFor(QS_BLUR_LEVEL_KEY),
+            false,
+            qsBlurObserver,
+            UserHandle.USER_ALL,
+        )
         if (!Flags.bouncerUiRevamp()) return
 
         windowRootViewBlurInteractor.registerBlurAppliedListener { appliedBlurRadius ->

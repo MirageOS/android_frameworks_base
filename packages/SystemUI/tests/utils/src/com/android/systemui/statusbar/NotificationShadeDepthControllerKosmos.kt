@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar
 
+import android.content.applicationContext
 import android.view.Choreographer
 import android.view.View
 import com.android.systemui.desktop.desktopModeRepository
@@ -51,6 +52,7 @@ var Kosmos.notificationShadeDepthController by Fixture {
             shadeDisplaysRepository = { shadeDisplaysRepository },
             focusedDisplayRepository = fakeFocusedDisplayRepository,
             applicationScope = applicationCoroutineScope,
+            appContext = applicationContext,
             desktopModeRepository = desktopModeRepository,
             dumpManager = dumpManager,
         )
