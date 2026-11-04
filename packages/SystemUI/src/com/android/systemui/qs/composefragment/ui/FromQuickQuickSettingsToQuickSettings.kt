@@ -16,13 +16,33 @@
 
 package com.android.systemui.qs.composefragment.ui
 
+import com.android.compose.animation.scene.ContentKey
+import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.ElementMatcher
 import com.android.compose.animation.scene.TransitionBuilder
+import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.qs.composefragment.SceneKeys
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 
+/** The QQS copy of the media player. Only used by the Motorola style transition below. */
+private val QqsMediaElementMatcher =
+    object : ElementMatcher {
+        override fun matches(key: ElementKey, content: ContentKey): Boolean {
+            return content == SceneKeys.QuickQuickSettings && key == Media.Elements.MediaCarousel
+        }
+    }
+
 fun TransitionBuilder.quickQuickSettingsToQuickSettings(
-    animateTilesExpansion: () -> Boolean = { true }
+    animateTilesExpansion: () -> Boolean = { true },
+    isMotorola: () -> Boolean = { false },
 ) {
+    if (isMotorola()) {
+        // The player sits at a different place in QQS and in QS. Sharing it made it travel across
+        // the panel while being pulled (and fight with the QS content translation/fade), so each
+        // copy just fades with its own scene instead.
+        sharedElement(Media.Elements.MediaCarousel, enabled = false)
+        fractionRange(end = 0.5f) { fade(QqsMediaElementMatcher) }
+    }
 
     fractionRange(start = 0.43f) { fade(Elements.QuickSettingsContent) }
 

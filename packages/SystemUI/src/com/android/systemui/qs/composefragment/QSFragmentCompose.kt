@@ -327,7 +327,13 @@ constructor(
                 transitions =
                     transitions {
                         from(QuickQuickSettings, QuickSettings) {
-                            quickQuickSettingsToQuickSettings(viewModel::animateTilesExpansion::get)
+                            quickQuickSettingsToQuickSettings(
+                                viewModel::animateTilesExpansion::get,
+                                isMotorola = {
+                                    viewModel.containerViewModel.tileGridViewModel.gridLayout
+                                        is MotorolaGridLayout
+                                },
+                            )
                         }
                         to(SceneKeys.EditMode) {
                             spec = tween(durationMillis = EDIT_MODE_TIME_MILLIS)
@@ -957,7 +963,7 @@ constructor(
                                 tiles = TileGrid,
                                 media = Media,
                                 mediaInRow = viewModel.qsMediaInRow,
-                                mediaOnTop = motorolaLayout != null,
+                                motorolaStyle = motorolaLayout != null,
                             )
                         }
                     }
@@ -1474,8 +1480,9 @@ fun QuickQuickSettingsLayout(
 /**
  * [brightness] is nullable as it might not be there (e.g. on connected displays).
  *
- * When [mediaOnTop] is set (Motorola style) and the media is not in a row with the tiles, the
- * player is drawn above everything else instead of below the tile grid.
+ * When [motorolaStyle] is set and the media is not in a row with the tiles, the player is drawn
+ * between the header block and the tile grid, like the Motorola layout does. In a row (landscape)
+ * the header block and tiles go on one side and the player on the other.
  */
 @Composable
 @VisibleForTesting
@@ -1484,9 +1491,9 @@ fun QuickSettingsLayout(
     tiles: @Composable () -> Unit,
     media: @Composable () -> Unit,
     mediaInRow: Boolean,
-    mediaOnTop: Boolean = false,
+    motorolaStyle: Boolean = false,
 ) {
-    if (mediaInRow && mediaOnTop) {
+    if (mediaInRow && motorolaStyle) {
         // Motorola landscape: header block and tiles on one side, the player on the other.
         Row(
             horizontalArrangement = spacedBy(QuickSettingsShade.Dimensions.HorizontalPadding),
@@ -1520,9 +1527,9 @@ fun QuickSettingsLayout(
             verticalArrangement = spacedBy(QuickSettingsShade.Dimensions.VerticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (mediaOnTop) {
-                media()
+            if (motorolaStyle) {
                 brightness()
+                media()
                 tiles()
             } else {
                 brightness()
