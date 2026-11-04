@@ -1361,6 +1361,9 @@ private class FrameLayoutTouchPassthrough(
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+            android.util.Log.d("QSMoto", "touch-down canFwd=${canScrollQs.forward()} canBack=${canScrollQs.backward()}")
+        }
         // If there's a touch on this view and we can scroll down, we don't want to be intercepted
         val action = ev.actionMasked
 

@@ -42,6 +42,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.qs.composefragment.ui.GridAnchor
+import com.android.systemui.qs.panels.ui.compose.MotorolaGridLayout
 import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
@@ -55,6 +56,7 @@ fun ContentScope.QuickSettingsContent(
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float = { 1f },
 ) {
+    val motorola = viewModel.tileGridViewModel.gridLayout is MotorolaGridLayout
     QuickSettingsPanelLayout(
         brightness =
             @Composable {
@@ -109,7 +111,7 @@ fun ContentScope.QuickSettingsContent(
                     Element(key = Media.Elements.MediaCarousel, modifier = Modifier) {
                         Media(
                             viewModelFactory = viewModel.mediaViewModelFactory,
-                            presentationStyle = MediaPresentationStyle.Default,
+                            presentationStyle = if (motorola) MediaPresentationStyle.Compact else MediaPresentationStyle.Default,
                             behavior = QuickSettingsContainerViewModel.mediaUiBehavior,
                             onDismissed = viewModel::onMediaSwipeToDismiss,
                             mediaSquishiness = mediaSquishiness,
