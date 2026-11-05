@@ -62,8 +62,7 @@ constructor(
      * Whether Dual Shade should be enabled in the absence of an explicit preference set by the
      * user.
      */
-    val isDualShadeEnabledByDefault: Flow<Boolean> =
-        booleanConfigFlow(R.bool.config_dualShadeEnabledByDefault)
+    val isDualShadeEnabledByDefault: Flow<Boolean> = flowOf(true) // Mirage: dual por padrao
 
     /**
      * Whether an explicit preference set by the user enabled (`true`) or disabled (`false`) Dual
@@ -87,8 +86,7 @@ constructor(
      * (including any shortcuts to them), the user preference value is ignored, and
      * [isDualShadeEnabledByDefault] is used.
      */
-    val useDualShadeSetting: Flow<Boolean> =
-        booleanConfigFlow(com.android.settingslib.R.bool.config_useDualShadeSetting)
+    val useDualShadeSetting: Flow<Boolean> = flowOf(true) // Mirage: respeita Settings.Secure.DUAL_SHADE
 
     /**
      * Whether notifications shade should be in the top end position (e.g. the right side of the
@@ -119,8 +117,7 @@ constructor(
     fun isFullWidthShade(): Boolean = resources.getBoolean(R.bool.config_isFullWidthShade)
 
     /** @see isDualShadeEnabledByDefault (the `val` above) */
-    fun isDualShadeEnabledByDefault(): Boolean =
-        resources.getBoolean(R.bool.config_dualShadeEnabledByDefault)
+    fun isDualShadeEnabledByDefault(): Boolean = true
 
     // TODO(444424242): Instead of having a separate flow for each resource, read them all at the
     //  same time whenever the configuration changes, and expose as a combined data class.

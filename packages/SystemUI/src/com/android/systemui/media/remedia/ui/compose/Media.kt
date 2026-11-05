@@ -687,15 +687,6 @@ private fun ContentScope.CardForegroundContent(
                     )
                 }
         ) {
-            // Barra de progresso minimalista (Bottom Seekbar)
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(colorScheme.primary.copy(alpha = 0.5f))
-            )
-
             // Icon.
             Element(key = Media.Elements.AppIcon, modifier = modifier) {
                 Icon(
