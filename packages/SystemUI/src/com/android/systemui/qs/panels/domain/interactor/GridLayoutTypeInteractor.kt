@@ -46,7 +46,7 @@ constructor(
             }
         }
             .combine(styleRepo.settings) { type, style ->
-                if (style.motorolaStyle && type == PaginatedGridLayoutType) {
+                if (style.motorolaStyle) {
                     MotorolaGridLayoutType
                 } else {
                     type
